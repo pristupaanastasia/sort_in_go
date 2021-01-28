@@ -1,4 +1,5 @@
 package main
+
 import (
 	"flag"
 	"fmt"
@@ -6,7 +7,6 @@ import (
 	"sort"
 	"sync"
 	"time"
-
 )
 
 func turn(x []int,time time.Time, id int, size int){
@@ -24,26 +24,27 @@ func array_init(size int) []int{
 	return x
 }
 
-func rut_init(size int, iter int, id int){
-	var wg sync.WaitGroup
-	wg.Add(iter)
+func rut_init(size int, iter int, id int, wg *sync.WaitGroup){
+	defer wg.Done()
 	for i := 0; i < iter; i++{
 		//fmt.Println("iter",i, "id", id)
 		time := time.Now()
-		go turn(array_init(size),time,id,size)
+		turn(array_init(size),time,id,size)
 	}
-	wg.Wait()
 	return
 }
 
 
 func main(){
+	var wg sync.WaitGroup
 	writersPtr := flag.Int("writers", 1, "an int")
 	arrPtr := flag.Int("arr-size", 1, "an int")
 	iterPtr := flag.Int("iter-count", 1, "an int")
 	flag.Parse()
+	wg.Add(*writersPtr)
 	for i:= 0; i< *writersPtr; i++ {
-		go rut_init(*arrPtr, *iterPtr,i)
+		go rut_init(*arrPtr, *iterPtr,i, &wg)
 	}
-	fmt.Scanln()
+	wg.Wait()
+	//fmt.Scanln()
 }
